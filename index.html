@@ -1387,7 +1387,11 @@
     <script>
       window.difyChatbotConfig = {
         token: 'ys9G2zC0Jqfnxjwv',
-        inputs: {},
+        inputs: {
+          shop_name: '料理屋 一々希',
+          phone_number: '03-5678-9012',
+          todays_special: '寒ブリ・蕗の薹',
+        },
         systemVariables: {},
         userVariables: {},
       }
@@ -1400,6 +1404,10 @@
     <style>
       #dify-chatbot-bubble-button {
         background-color: #b8956a !important;
+        background-image: none !important;
+      }
+      #dify-chatbot-bubble-button:hover {
+        background-color: #d4b48a !important;
       }
       #dify-chatbot-bubble-window {
         width: 24rem !important;
