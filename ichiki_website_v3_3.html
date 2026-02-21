@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>料理屋 一々希 | Ichiki Daikanyama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;0,900;1,400;1,700&family=Shippori+Mincho+B1:wght@400;500;700;800&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── TOKENS ── */
+    :root {
+      --black:   #0c0a08;
+      --deep:    #141008;
+      --paper:   #f2ece0;
+      --cream:   #e8dece;
+      --gold:    #b8956a;
+      --gold-lt: #d4b48a;
+      --rust:    #6b3520;
+      --muted:   #7a6e60;
+      --dim:     rgba(242,236,224,0.45);
+      --easing:  cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ── RESET ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      background: var(--black);
+      color: var(--paper);
+      font-family: 'Shippori Mincho B1', serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Restore cursor inside iframe and any input areas */
+    iframe,
+    input,
+    textarea,
+    select,
+    [contenteditable] {
+      cursor: auto !important;
+    }
+
+    /* ── GRAIN OVERLAY ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0.028;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 128px 128px;
+    }
+
+    /* ── CUSTOM CURSOR ── */
+    .cursor {
+      position: fixed;
+      pointer-events: none;
+      z-index: 10000;
+      mix-blend-mode: difference;
+    }
+    .cursor-dot {
+      width: 6px; height: 6px;
+      background: var(--paper);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s;
+    }
+    .cursor-ring {
+      width: 36px; height: 36px;
+      border: 1px solid rgba(242,236,224,0.5);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: transform 0.18s var(--easing), width 0.3s var(--easing), height 0.3s var(--easing), opacity 0.3s;
+    }
+    body:hover .cursor-ring { opacity: 1; }
+
+    /* ── PAGE LOADER ── */
+    .loader {
+      position: fixed;
+      inset: 0;
+      z-index: 9000;
+      background: var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 2rem;
+      transition: opacity 0.8s var(--easing), visibility 0.8s;
+    }
+    .loader.hidden { opacity: 0; visibility: hidden; }
+
+    .loader-kanji {
+      font-size: 5rem;
+      color: var(--gold);
+      opacity: 0;
+      animation: loaderKanji 1.8s var(--easing) forwards 0.2s;
+    }
+    .loader-bar {
+      width: 200px;
+      height: 1px;
+      background: rgba(184,149,106,0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    .loader-bar::after {
+      content: '';
+      position: absolute;
+      left: -100%;
+      top: 0; bottom: 0;
+      width: 100%;
+      background: var(--gold);
+      animation: loaderBar 1.6s var(--easing) forwards 0.4s;
+    }
+    .loader-text {
+      font-family: 'IM Fell English', serif;
+      font-style: italic;
+      font-size: 0.75rem;
+      letter-spacing: 0.3em;
+      color: var(--muted);
+      opacity: 0;
+      animation: loaderFade 1s ease forwards 0.8s;
+    }
+    @keyframes loaderKanji {
+      0%   { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes loaderBar {
+      0%   { left: -100%; }
+      100% { left: 100%; }
+    }
+    @keyframes loaderFade {
+      to { opacity: 1; }
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 500;
+      padding: 1.8rem 3.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      mix-blend-mode: normal;
+    }
+    nav::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(12,10,8,0.85) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .nav-logo {
+      position: relative;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .nav-logo-ja {
+      font-family: 'Shippori Mincho B1', serif;
+      font-size: 1rem;
+      letter-spacing: 0.3em;
+      color: var(--paper);
+    }
+    .nav-logo-en {
+      font-family: 'IM Fell English', serif;
+      font-style: italic;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+    }
+
+    .nav-links {
+      position: relative;
+      list-style: none;
+      display: flex;
+      gap: 3rem;
+      align-items: center;
+    }
+    .nav-links a {
+      font-family: 'IM Fell English', serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      color: var(--dim);
+      text-decoration: none;
+      transition: color 0.3s;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 0; height: 1px;
+      background: var(--gold);
+      transition: width 0.4s var(--easing);
+    }
+    .nav-links a:hover { color: var(--paper); }
+    .nav-links a:hover::after { width: 100%; }
+
+    .nav-reserve {
+      font-family: 'IM Fell English', serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      color: var(--black);
+      background: var(--gold);
+      padding: 0.6rem 1.4rem;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+    .nav-reserve:hover { background: var(--gold-lt); }
+
+    /* ── HERO ── */
+    .hero {
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    /* Left dark panel */
+    .hero-left {
+      background: var(--deep);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      padding: 4rem 3.5rem;
+    }
+
+    .hero-bg-kanji {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: clamp(12rem, 22vw, 20rem);
+      font-weight: 800;
+      color: rgba(184,149,106,0.055);
+      writing-mode: vertical-rl;
+      letter-spacing: -0.05em;
+      white-space: nowrap;
+      pointer-events: none;
+      animation: slowDrift 20s ease-in-out infinite alternate;
+    }
+    @keyframes slowDrift {
+      from { transform: translate(-50%, -50%) translateY(-2%); }
+      to   { transform: translate(-50%, -50%) translateY(2%); }
+    }
+
+    .hero-left-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-established {
+      font-family: 'IM Fell English', serif;
+      font-style: italic;
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: revealUp 1s var(--easing) forwards 1.8s;
+    }
+
+    .hero-title-ja {
+      font-size: clamp(2.8rem, 5vw, 4.2rem);
+      font-weight: 700;
+      line-height: 1.4;
+      letter-spacing: 0.15em;
+      color: var(--paper);
+      opacity: 0;
+      animation: revealUp 1s var(--easing) forwards 2s;
+    }
+
+    .hero-title-highlight {
+      color: var(--gold);
+    }
+
+    .hero-title-en {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: clamp(1rem, 1.8vw, 1.4rem);
+      font-weight: 400;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      margin-top: 0.8rem;
+      opacity: 0;
+      animation: revealUp 1s var(--easing) forwards 2.2s;
+    }
+
+    /* Gold line decoration */
+    .hero-left::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      right: 0;
+      width: 1px;
+      background: linear-gradient(to bottom, transparent, var(--gold) 30%, var(--gold) 70%, transparent);
+      opacity: 0.3;
+    }
+
+    /* Right panel */
+    .hero-right {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 6rem 4rem 4rem;
+    }
+
+    /* Diagonal stripes background */
+    .hero-right::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          -45deg,
+          transparent,
+          transparent 60px,
+          rgba(184,149,106,0.02) 60px,
+          rgba(184,149,106,0.02) 61px
+        );
+    }
+
+    .hero-desc {
+      font-family: 'Shippori Mincho B1', serif;
+      font-size: 0.82rem;
+      line-height: 2.4;
+      color: var(--muted);
+      max-width: 320px;
+      margin-bottom: 3.5rem;
+      opacity: 0;
+      animation: revealUp 1s var(--easing) forwards 2.4s;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      margin-bottom: 3.5rem;
+      opacity: 0;
+      animation: revealUp 1s var(--easing) forwards 2.6s;
+    }
+
+    .hero-stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .hero-stat-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+    }
+
+    .hero-cta-group {
+      display: flex;
+      gap: 1rem;
+      opacity: 0;
+      animation: revealUp 1s var(--easing) forwards 2.8s;
+    }
+
+    .btn-gold {
+      padding: 1rem 2.4rem;
+      background: var(--gold);
+      color: var(--black);
+      font-family: 'IM Fell English', serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-decoration: none;
+      border: none;
+      cursor: none;
+      transition: background 0.3s, transform 0.3s var(--easing);
+      display: inline-block;
+    }
+    .btn-gold:hover {
+      background: var(--gold-lt);
+      transform: translateY(-3px);
+    }
+
+    .btn-ghost {
+      padding: 1rem 2.4rem;
+      background: transparent;
+      color: var(--paper);
+      font-family: 'IM Fell English', serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-decoration: none;
+      border: 1px solid rgba(242,236,224,0.2);
+      cursor: none;
+      transition: border-color 0.3s, background 0.3s;
+      display: inline-block;
+    }
+    .btn-ghost:hover {
+      border-color: var(--gold);
+      background: rgba(184,149,106,0.08);
+    }
+
+    /* Scroll indicator */
+    .hero-scroll {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.8rem;
+      opacity: 0;
+      animation: revealUp 1s ease forwards 3.2s;
+    }
+    .hero-scroll-text {
+      font-family: 'IM Fell English', serif;
+      font-style: italic;
+      font-size: 0.6rem;
+      letter-spacing: 0.3em;
+      color: var(--muted);
+    }
+    .hero-scroll-line {
+      width: 1px;
+      height: 50px;
+      background: linear-gradient(to bottom, var(--gold), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+    @keyframes scrollPulse {
+      0%   { opacity: 1; transform: scaleY(1); transform-origin: top; }
+      50%  { opacity: 0.4; }
+      100% { opacity: 1; transform: scaleY(1); transform-origin: top; }
+    }
+
+    @keyframes revealUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── MARQUEE BAND ── */
+    .marquee-band {
+      background: var(--gold);
+      overflow: hidden;
+      padding: 0.9rem 0;
+      position: relative;
+    }
+    .marquee-track {
+      display: flex;
+      gap: 0;
+      animation: marquee 22s linear infinite;
+      white-space: nowrap;
+    }
+    .marquee-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 2rem;
+      padding: 0 2rem;
+      font-family: 'IM Fell English', serif;
+      font-style: italic;
+      font-size: 0.78rem;
+      letter-spacing: 0.15em;
+      color: var(--black);
+    }
+    .marquee-dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--black);
+      opacity: 0.4;
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ── REVEAL UTILITY ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.9s var(--easing), transform 0.9s var(--easing);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.35s; }
+    .reveal-delay-4 { transition-delay: 0.5s; }
+
+    /* ── MENU SECTION ── */
+    .menu-section {
+      padding: 10rem 0 8rem;
+      background: var(--deep);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* giant decorative number */
+    .menu-section::before {
+      content: 'MENU';
+      position: absolute;
+      top: 4rem;
+      right: -2rem;
+      font-family: 'Playfair Display', serif;
+      font-size: 14rem;
+      font-weight: 900;
+      color: rgba(184,149,106,0.03);
+      letter-spacing: -0.05em;
+      pointer-events: none;
+      line-height: 1;
+    }
+
+    .menu-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 5rem;
+      margin-bottom: 6rem;
+    }
+
+    .menu-header-left {}
+
+    .section-eyebrow {
+      font-family: 'IM Fell English', serif;
+      font-style: italic;
+      font-size: 0.75rem;
+      letter-spacing: 0.3em;
+      color: var(--gold);
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .section-title-large {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 5vw, 5rem);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    .section-title-ja {
+      font-family: 'Shippori Mincho B1', serif;
+      font-size: 1rem;
+      letter-spacing: 0.3em;
+      color: var(--muted);
+      margin-top: 0.8rem;
+    }
+
+    .menu-header-right {
+      font-size: 0.75rem;
+      line-height: 2;
+      color: var(--muted);
+      max-width: 260px;
+      text-align: right;
+    }
+
+    /* Horizontal scroll cards */
+    .menu-scroll-wrapper {
+      padding: 0 5rem;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .menu-card {
+      position: relative;
+      border: 1px solid rgba(184,149,106,0.12);
+      padding: 3rem 2.8rem 3.5rem;
+      overflow: hidden;
+      transition: border-color 0.4s, transform 0.5s var(--easing);
+      cursor: none;
+    }
+    .menu-card:hover {
+      border-color: rgba(184,149,106,0.45);
+      transform: translateY(-8px);
+    }
+
+    /* Card number watermark */
+    .menu-card-num {
+      position: absolute;
+      bottom: -1rem;
+      right: 0.5rem;
+      font-family: 'Playfair Display', serif;
+      font-size: 8rem;
+      font-weight: 900;
+      color: rgba(184,149,106,0.045);
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    /* Hover fill effect */
+    .menu-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(184,149,106,0.04);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .menu-card:hover::before { opacity: 1; }
+
+    /* Featured card */
+    .menu-card.featured {
+      border-color: rgba(184,149,106,0.35);
+      background: linear-gradient(135deg, rgba(184,149,106,0.07), rgba(184,149,106,0.02));
+    }
+    .menu-card.featured::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(to right, transparent, var(--gold), transparent);
+    }
+
+    .card-tag {
+      font-family: 'IM Fell English', serif;
+      font-style: italic;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+      border: 1px solid rgba(184,149,106,0.4);
+      padding: 0.2rem 0.7rem;
+      display: inline-block;
+      margin-bottom: 2rem;
+    }
+
+    .card-name-ja {
+      font-size: 2.4rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      line-height: 1.2;
+      margin-bottom: 0.4rem;
+    }
+
+    .card-name-en {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 0.85rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      margin-bottom: 2rem;
+    }
+
+    .card-price {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.3rem;
+    }
+
+    .card-courses {
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+    }
+
+    .card-divider {
+      width: 32px;
+      height: 1px;
+      background: var(--gold);
+      margin-bottom: 2rem;
+      opacity: 0.5;
+    }
+
+    .card-items {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .card-items li {
+      font-size: 0.72rem;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid rgba(184,149,106,0.1);
+      color: rgba(242,236,224,0.5);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      letter-spacing: 0.03em;
+    }
+    .card-items li::before {
+      content: '';
+      width: 14px;
+      height: 1px;
+      background: var(--gold);
+      opacity: 0.4;
+      flex-shrink: 0;
+    }
+
+    /* ── INFO SECTION ── */
+    .info-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 600px;
+    }
+
+    .info-visual {
+      background: #0a0806;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Geometric abstract "map" */
+    .info-visual svg {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      inset: 0;
+    }
+
+    .info-overlay-text {
+      position: absolute;
+      bottom: 3rem;
+      left: 3.5rem;
+      right: 3.5rem;
+    }
+    .info-overlay-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.3em;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
+    }
+    .info-overlay-addr {
+      font-size: 0.8rem;
+      line-height: 1.8;
+      color: rgba(242,236,224,0.5);
+      letter-spacing: 0.08em;
+    }
+
+    .info-content {
+      background: var(--paper);
+      padding: 6rem 5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .info-content .section-eyebrow { color: var(--rust); }
+    .info-content .section-title-large { color: var(--black); }
+    .info-content .section-title-ja { color: rgba(12,10,8,0.4); }
+
+    .info-grid {
+      margin-top: 3.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .info-row {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 2rem;
+      padding: 1.2rem 0;
+      border-bottom: 1px solid rgba(12,10,8,0.08);
+      align-items: start;
+    }
+    .info-label {
+      font-family: 'IM Fell English', serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      color: var(--rust);
+      padding-top: 0.1rem;
+    }
+    .info-value {
+      font-family: 'Shippori Mincho B1', serif;
+      font-size: 0.82rem;
+      line-height: 1.9;
+      color: rgba(12,10,8,0.65);
+      letter-spacing: 0.05em;
+    }
+
+    /* ── CHATBOT SECTION ── */
+    /* ── CHATBOT SECTION ── */
+    .chatbot-section {
+      background: var(--deep);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chatbot-section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(to right, transparent 10%, var(--gold) 50%, transparent 90%);
+      opacity: 0.4;
+    }
+
+    /* top info band */
+    .chatbot-info-band {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 7rem 5rem 5rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: end;
+    }
+
+    .chatbot-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 4vw, 3.4rem);
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      margin-top: 1rem;
+    }
+    .chatbot-title em { font-style: italic; color: var(--gold); }
+
+    .chatbot-body {
+      font-size: 0.8rem;
+      line-height: 2.3;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .chatbot-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      margin-bottom: 2rem;
+    }
+    .chatbot-list li {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: rgba(242,236,224,0.5);
+      letter-spacing: 0.05em;
+    }
+    .chatbot-list li::before {
+      content: '';
+      width: 20px; height: 1px;
+      background: var(--gold);
+      flex-shrink: 0;
+    }
+
+    .chatbot-tel {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      padding: 1.2rem 1.8rem;
+      border: 1px solid rgba(184,149,106,0.25);
+      background: rgba(184,149,106,0.04);
+    }
+    .chatbot-tel-label {
+      font-family: 'IM Fell English', serif;
+      font-style: italic;
+      font-size: 0.62rem;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+    }
+    .chatbot-tel-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      color: var(--paper);
+    }
+
+    /* ── FULL-WIDTH IFRAME STAGE ── */
+    .chatbot-stage {
+      position: relative;
+      margin: 0;
+      border-top: 1px solid rgba(184,149,106,0.15);
+    }
+
+    /* gold top accent line */
+    .chatbot-stage::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(to right, transparent 0%, var(--gold) 30%, var(--gold-lt) 50%, var(--gold) 70%, transparent 100%);
+      z-index: 2;
+    }
+
+    .chatbot-stage-header {
+      background: rgba(12,10,8,0.95);
+      padding: 1rem 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(184,149,106,0.12);
+      position: relative;
+      z-index: 1;
+    }
+
+    .chatbot-stage-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .frame-dot-green {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: #4caf7d;
+      box-shadow: 0 0 12px rgba(76,175,125,0.7);
+      animation: pulseGreen 2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pulseGreen {
+      0%, 100% { box-shadow: 0 0 8px rgba(76,175,125,0.5); }
+      50%       { box-shadow: 0 0 22px rgba(76,175,125,1); }
+    }
+
+    .frame-title {
+      font-family: 'IM Fell English', serif;
+      font-style: italic;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      color: rgba(242,236,224,0.6);
+    }
+
+    .frame-badge {
+      font-family: 'IM Fell English', serif;
+      font-style: italic;
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+      border: 1px solid rgba(184,149,106,0.35);
+      padding: 0.25rem 0.9rem;
+    }
+
+    .chatbot-stage-iframe {
+      display: block;
+      width: 100%;
+      height: 700px;
+      border: none;
+      cursor: auto;
+    }
+
+    .chatbot-dify-area {
+      min-height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+      background: linear-gradient(135deg, rgba(184,149,106,0.04) 0%, rgba(12,10,8,0.8) 100%);
+    }
+
+    .chatbot-dify-hint {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2rem;
+      text-align: center;
+    }
+
+    .chatbot-dify-hint-icon {
+      font-size: 2.5rem;
+      opacity: 0.6;
+    }
+
+    .chatbot-dify-hint-text {
+      font-family: 'Shippori Mincho B1', serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      color: rgba(242,236,224,0.5);
+      line-height: 1.8;
+    }
+
+    .chatbot-note {
+      background: rgba(12,10,8,0.95);
+      padding: 0.9rem 2.5rem;
+      font-family: 'IM Fell English', serif;
+      font-style: italic;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      color: rgba(242,236,224,0.18);
+      text-align: center;
+      border-top: 1px solid rgba(184,149,106,0.08);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--deep);
+      border-top: 1px solid rgba(184,149,106,0.12);
+      padding: 4rem 5rem;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .footer-left {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .footer-logo-ja {
+      font-size: 1.1rem;
+      letter-spacing: 0.3em;
+    }
+    .footer-logo-en {
+      font-family: 'IM Fell English', serif;
+      font-style: italic;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+    }
+
+    .footer-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .footer-links {
+      list-style: none;
+      display: flex;
+      gap: 2.5rem;
+    }
+    .footer-links a {
+      font-family: 'IM Fell English', serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .footer-links a:hover { color: var(--gold); }
+
+    .footer-right {
+      text-align: right;
+      font-family: 'IM Fell English', serif;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      color: rgba(122,110,96,0.4);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero-left { min-height: 55vh; align-items: center; padding: 6rem 2.5rem 3rem; }
+      .hero-right { padding: 3rem 2.5rem; }
+      nav { padding: 1.2rem 2rem; }
+      .nav-links { display: none; }
+      .menu-header { padding: 0 2.5rem; flex-direction: column; gap: 1.5rem; }
+      .menu-header-right { text-align: left; }
+      .menu-scroll-wrapper { grid-template-columns: 1fr; padding: 0 2.5rem; }
+      .info-section { grid-template-columns: 1fr; }
+      .info-visual { min-height: 300px; }
+      .info-content { padding: 4rem 2.5rem; }
+      .chatbot-info-band { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 2.5rem 2.5rem; }
+      footer { grid-template-columns: 1fr; text-align: center; padding: 3rem 2rem; }
+      .footer-right { text-align: center; }
+      .footer-links { flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- CURSOR -->
+  <div class="cursor" id="cursor">
+    <div class="cursor-dot" id="cursorDot"></div>
+  </div>
+  <div class="cursor" id="cursorRing">
+    <div class="cursor-ring" id="cursorRingEl"></div>
+  </div>
+
+  <!-- LOADER -->
+  <div class="loader" id="loader">
+    <div class="loader-kanji">希</div>
+    <div class="loader-bar"></div>
+    <div class="loader-text">ICHIKI · DAIKANYAMA</div>
+  </div>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#top" class="nav-logo">
+      <span class="nav-logo-ja">料理屋 一々希</span>
+      <span class="nav-logo-en">Ichiki · Daikanyama</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#menu">Menu</a></li>
+      <li><a href="#access">Access</a></li>
+      <li><a href="#reserve">Reserve</a></li>
+    </ul>
+    <a href="#reserve" class="nav-reserve">ご予約</a>
+  </nav>
+
+  <!-- ① HERO -->
+  <section class="hero" id="top">
+    <div class="hero-left">
+      <div class="hero-bg-kanji">一々希</div>
+      <div class="hero-left-content">
+        <p class="hero-established">— Daikanyama, Tokyo · Est. 2016</p>
+        <h1 class="hero-title-ja">
+          一皿に、<br>
+          <span class="hero-title-highlight">希望</span>を込めて。
+        </h1>
+        <p class="hero-title-en">Cuisine of Hope</p>
+      </div>
+    </div>
+    <div class="hero-right">
+      <p class="hero-desc">
+        代官山の静かな路地に佇む、全28席の日本料理店。
+        店主・中村光一が毎朝市場で選び抜いた食材と、
+        引き算の美学を大切にした料理をご提供します。
+        ミシュラン一つ星、2019年より連続取得。
+      </p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-num">28</div>
+          <div class="hero-stat-label">Seats</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">★</div>
+          <div class="hero-stat-label">Michelin</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">09</div>
+          <div class="hero-stat-label">Years</div>
+        </div>
+      </div>
+      <div class="hero-cta-group">
+        <a href="#reserve" class="btn-gold">ご予約・お問い合わせ</a>
+        <a href="#menu" class="btn-ghost">Menu</a>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <div class="hero-scroll-line"></div>
+      <span class="hero-scroll-text">Scroll</span>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-band">
+    <div class="marquee-track">
+      <!-- duplicated for seamless loop -->
+      <span class="marquee-item">Ichiki Daikanyama<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Michelin One Star 2019–<span class="marquee-dot"></span></span>
+      <span class="marquee-item">日本料理 · 代官山<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Open for Lunch & Dinner<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Reservations Recommended<span class="marquee-dot"></span></span>
+      <span class="marquee-item">季節の食材を丁寧に<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Ichiki Daikanyama<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Michelin One Star 2019–<span class="marquee-dot"></span></span>
+      <span class="marquee-item">日本料理 · 代官山<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Open for Lunch & Dinner<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Reservations Recommended<span class="marquee-dot"></span></span>
+      <span class="marquee-item">季節の食材を丁寧に<span class="marquee-dot"></span></span>
+    </div>
+  </div>
+
+  <!-- ② MENU -->
+  <section class="menu-section" id="menu">
+    <div class="menu-header reveal">
+      <div class="menu-header-left">
+        <span class="section-eyebrow">Course Menu</span>
+        <h2 class="section-title-large">お献立</h2>
+        <p class="section-title-ja">Seasonal Omakase</p>
+      </div>
+      <p class="menu-header-right reveal reveal-delay-2">
+        三つのコースをご用意しております。<br>
+        いずれも、その日最良の食材で<br>
+        お仕立てした品々をお届けします。
+      </p>
+    </div>
+
+    <div class="menu-scroll-wrapper">
+      <!-- Card 01 -->
+      <div class="menu-card reveal reveal-delay-1">
+        <div class="menu-card-num">01</div>
+        <span class="card-tag">Standard</span>
+        <h3 class="card-name-ja">一</h3>
+        <p class="card-name-en">Ichi Course</p>
+        <div class="card-price">¥9,900</div>
+        <p class="card-courses">全 8 品 · 税込</p>
+        <div class="card-divider"></div>
+        <ul class="card-items">
+          <li>先付け · 季節の一品</li>
+          <li>前菜 · 小鉢三種盛り</li>
+          <li>お椀 · 季節の清汁</li>
+          <li>お造り · 鮮魚二種</li>
+          <li>焼き物 · 旬魚または地鶏</li>
+          <li>煮物 · 季節野菜</li>
+          <li>食事 · 土鍋炊きご飯</li>
+          <li>甘味 · 本日のデザート</li>
+        </ul>
+      </div>
+
+      <!-- Card 02 featured -->
+      <div class="menu-card featured reveal reveal-delay-2">
+        <div class="menu-card-num">02</div>
+        <span class="card-tag">Most Popular</span>
+        <h3 class="card-name-ja">希</h3>
+        <p class="card-name-en">Ki Course</p>
+        <div class="card-price">¥14,300</div>
+        <p class="card-courses">全 10 品 · 税込</p>
+        <div class="card-divider"></div>
+        <ul class="card-items">
+          <li>先付け · 二種盛り</li>
+          <li>前菜 · 小鉢五種盛り</li>
+          <li>お椀 · 吉野仕立て</li>
+          <li>お造り · 鮮魚三種・活貝</li>
+          <li>焼き物 · 炭火焼き</li>
+          <li>蒸し物 · 茶碗蒸し</li>
+          <li>煮物 · 京野菜と海老</li>
+          <li>揚げ物 · 天ぷら盛り</li>
+          <li>食事 · 土鍋炊きご飯</li>
+          <li>甘味 · 特製デザートと和菓子</li>
+        </ul>
+      </div>
+
+      <!-- Card 03 -->
+      <div class="menu-card reveal reveal-delay-3">
+        <div class="menu-card-num">03</div>
+        <span class="card-tag">Prestige</span>
+        <h3 class="card-name-ja">一々希</h3>
+        <p class="card-name-en">Ichiki Course</p>
+        <div class="card-price">¥19,800</div>
+        <p class="card-courses">全 12 品 · 税込</p>
+        <div class="card-divider"></div>
+        <ul class="card-items">
+          <li>先付け · 三種盛り</li>
+          <li>八寸 · 旬の肴八種</li>
+          <li>お椀 · 特選お椀</li>
+          <li>お造り · 鮮魚五種・活貝</li>
+          <li>焼き物 · A5黒毛和牛</li>
+          <li>蒸し物 · 特製蒸し料理</li>
+          <li>煮物 · 厳選素材</li>
+          <li>揚げ物 · 天然素材の天ぷら</li>
+          <li>口直し · 季節のシャーベット</li>
+          <li>食事 · 土鍋炊きご飯</li>
+          <li>甘味 · 特製デザート・上生菓子</li>
+          <li>小菓子 · 季節の干菓子</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ③ INFO / ACCESS -->
+  <section class="info-section" id="access">
+    <div class="info-visual">
+      <!-- Abstract geometric map SVG -->
+      <svg viewBox="0 0 600 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <rect width="600" height="700" fill="#0a0806"/>
+        <!-- grid lines -->
+        <g stroke="#b8956a" stroke-width="0.4" opacity="0.12">
+          <line x1="0" y1="100" x2="600" y2="100"/>
+          <line x1="0" y1="200" x2="600" y2="200"/>
+          <line x1="0" y1="300" x2="600" y2="300"/>
+          <line x1="0" y1="400" x2="600" y2="400"/>
+          <line x1="0" y1="500" x2="600" y2="500"/>
+          <line x1="0" y1="600" x2="600" y2="600"/>
+          <line x1="100" y1="0" x2="100" y2="700"/>
+          <line x1="200" y1="0" x2="200" y2="700"/>
+          <line x1="300" y1="0" x2="300" y2="700"/>
+          <line x1="400" y1="0" x2="400" y2="700"/>
+          <line x1="500" y1="0" x2="500" y2="700"/>
+        </g>
+        <!-- diagonal road -->
+        <line x1="0" y1="150" x2="600" y2="600" stroke="#b8956a" stroke-width="1.5" opacity="0.18"/>
+        <line x1="80" y1="0" x2="680" y2="700" stroke="#b8956a" stroke-width="0.6" opacity="0.08"/>
+        <!-- main road horizontal -->
+        <line x1="0" y1="350" x2="600" y2="350" stroke="#b8956a" stroke-width="2" opacity="0.15"/>
+        <!-- location pin -->
+        <circle cx="300" cy="348" r="22" fill="none" stroke="#b8956a" stroke-width="1" opacity="0.8"/>
+        <circle cx="300" cy="348" r="7" fill="#b8956a" opacity="0.9"/>
+        <circle cx="300" cy="348" r="40" fill="none" stroke="#b8956a" stroke-width="0.5" opacity="0.25" stroke-dasharray="6 6">
+          <animateTransform attributeName="transform" type="rotate" from="0 300 348" to="360 300 348" dur="20s" repeatCount="indefinite"/>
+        </circle>
+        <!-- pulse ring -->
+        <circle cx="300" cy="348" r="22" fill="none" stroke="#b8956a" stroke-width="1.5" opacity="0">
+          <animate attributeName="r" from="22" to="60" dur="2.5s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" from="0.5" to="0" dur="2.5s" repeatCount="indefinite"/>
+        </circle>
+        <!-- station label -->
+        <text x="300" y="418" text-anchor="middle" fill="#b8956a" font-size="11" opacity="0.5" font-family="serif" letter-spacing="3">代官山駅 徒歩3分</text>
+        <text x="300" y="435" text-anchor="middle" fill="#b8956a" font-size="8" opacity="0.25" font-family="serif" letter-spacing="2">DAIKANYAMA STA.</text>
+        <!-- decorative corners -->
+        <path d="M 30 30 L 80 30 L 80 80" fill="none" stroke="#b8956a" stroke-width="0.8" opacity="0.25"/>
+        <path d="M 570 30 L 520 30 L 520 80" fill="none" stroke="#b8956a" stroke-width="0.8" opacity="0.25"/>
+        <path d="M 30 670 L 80 670 L 80 620" fill="none" stroke="#b8956a" stroke-width="0.8" opacity="0.25"/>
+        <path d="M 570 670 L 520 670 L 520 620" fill="none" stroke="#b8956a" stroke-width="0.8" opacity="0.25"/>
+      </svg>
+      <div class="info-overlay-text">
+        <p class="info-overlay-title">Location</p>
+        <p class="info-overlay-addr">東京都渋谷区代官山町9-3<br>東急東横線「代官山駅」より徒歩3分</p>
+      </div>
+    </div>
+
+    <div class="info-content">
+      <span class="section-eyebrow reveal">Shop Information</span>
+      <h2 class="section-title-large reveal reveal-delay-1">店舗情報</h2>
+      <p class="section-title-ja reveal reveal-delay-1">Access & Hours</p>
+      <div class="info-grid reveal reveal-delay-2">
+        <div class="info-row">
+          <span class="info-label">店舗名</span>
+          <span class="info-value">料理屋 一々希（いちいき）</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">住所</span>
+          <span class="info-value">東京都渋谷区代官山町9-3<br>一々希ビル1F</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">電話</span>
+          <span class="info-value">03-5678-9012</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">営業時間</span>
+          <span class="info-value">Lunch  12:00–14:30 (L.O. 14:00)<br>Dinner  18:00–22:30 (L.O. 21:30)</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">定休日</span>
+          <span class="info-value">毎週火曜日・第3水曜日<br>（祝日の場合は翌日）</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">アクセス</span>
+          <span class="info-value">東急東横線「代官山駅」正面口<br>より徒歩3分</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">お支払い</span>
+          <span class="info-value">VISA / Master / JCB / AMEX<br>PayPay · 交通系IC</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ④ CHATBOT -->
+  <section class="chatbot-section" id="reserve">
+
+    <!-- Info band above iframe -->
+    <div class="chatbot-info-band">
+      <div>
+        <span class="section-eyebrow reveal">AI Concierge</span>
+        <h2 class="chatbot-title reveal reveal-delay-1">
+          24時間、<em>いつでも</em><br>お気軽に。
+        </h2>
+      </div>
+      <div class="reveal reveal-delay-2">
+        <p class="chatbot-body">
+          コースの内容・アレルギー対応・記念日のご相談など、AIコンシェルジュが丁寧にご案内いたします。ご予約の確定は、お電話または予約サイトにてお手続きください。
+        </p>
+        <ul class="chatbot-list">
+          <li>コース・メニューのご案内</li>
+          <li>アレルギー・食材のご相談</li>
+          <li>記念日・特別対応のご相談</li>
+          <li>営業時間・アクセスのご案内</li>
+          <li>24時間 · 365日対応</li>
+        </ul>
+        <div class="chatbot-tel">
+          <span class="chatbot-tel-label">Direct Reservation</span>
+          <span class="chatbot-tel-num">03-5678-9012</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Full-width Dify chat stage -->
+    <div class="chatbot-stage reveal">
+      <div class="chatbot-stage-header">
+        <div class="chatbot-stage-left">
+          <div class="frame-dot-green"></div>
+          <span class="frame-title">一々希 AI Concierge · オンライン</span>
+        </div>
+        <span class="frame-badge">24h · 365d</span>
+      </div>
+      <div class="chatbot-dify-area" id="dify-area">
+        <div class="chatbot-dify-hint">
+          <span class="chatbot-dify-hint-icon">💬</span>
+          <span class="chatbot-dify-hint-text">画面右下のチャットアイコンからAIコンシェルジュにご相談いただけます</span>
+        </div>
+      </div>
+      <p class="chatbot-note">※ チャットボットはご質問・ご相談専用です。ご予約の確定はお電話（03-5678-9012）または予約サイトにてお手続きください。</p>
+    </div>
+
+    <!-- Dify 公式埋め込みスクリプト -->
+    <script>
+      window.difyChatbotConfig = {
+        token: 'ys9G2zC0Jqfnxjwv',
+        inputs: {},
+        systemVariables: {},
+        userVariables: {},
+      }
+    </script>
+    <script
+      src="https://udify.app/embed.min.js"
+      id="ys9G2zC0Jqfnxjwv"
+      defer>
+    </script>
+    <style>
+      #dify-chatbot-bubble-button {
+        background-color: #b8956a !important;
+      }
+      #dify-chatbot-bubble-window {
+        width: 24rem !important;
+        height: 40rem !important;
+      }
+    </style>
+
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-left">
+      <span class="footer-logo-ja">料理屋 一々希</span>
+      <span class="footer-logo-en">Ichiki · Japanese Cuisine · Daikanyama</span>
+    </div>
+    <div class="footer-center">
+      <ul class="footer-links">
+        <li><a href="#top">Top</a></li>
+        <li><a href="#menu">Menu</a></li>
+        <li><a href="#access">Access</a></li>
+        <li><a href="#reserve">Reserve</a></li>
+      </ul>
+    </div>
+    <div class="footer-right">
+      © 2025 料理屋 一々希<br>All Rights Reserved.
+    </div>
+  </footer>
+
+  <script>
+    // ── CURSOR ──
+    const dot  = document.getElementById('cursorDot');
+    const ring = document.getElementById('cursorRingEl');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.left  = mx + 'px';
+      dot.style.top   = my + 'px';
+    });
+
+    (function animRing() {
+      rx += (mx - rx) * 0.12;
+      ry += (my - ry) * 0.12;
+      ring.style.left = rx + 'px';
+      ring.style.top  = ry + 'px';
+      requestAnimationFrame(animRing);
+    })();
+
+    // Hover expand
+    document.querySelectorAll('a, button, .menu-card').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        ring.style.width  = '60px';
+        ring.style.height = '60px';
+      });
+      el.addEventListener('mouseleave', () => {
+        ring.style.width  = '36px';
+        ring.style.height = '36px';
+      });
+    });
+
+    // ── LOADER ──
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('loader').classList.add('hidden');
+      }, 2200);
+    });
+
+    // ── SCROLL REVEAL ──
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
